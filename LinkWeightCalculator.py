@@ -7,6 +7,7 @@ Created on Wed Apr 25 11:51:30 2018
 
 import pandas as pd
 import os
+import numpy as np
 
 xls=pd.ExcelFile('Matrix.xlsx')
 water=pd.read_excel(xls,'Water')
@@ -219,14 +220,27 @@ def NetworkParamUpdate(Typ,networks,incrementtype,increment):
         terminalcost=TerminalCost(Translink,alpha,BetaRDW,AvgSpeedOD,AvgSpeedRail,AvgSpeedWater)
         odcosts=ODlinkCost(AccEgrLink,alpha,BetaRDW,CapacityOD,AvgSpeedOD)
         MatrixCostOutput(watercost,roadcost,railcost,terminalcost,odcosts,increment,incrementtype,networks)
-userInput=input('chose \'default\' for orginal link weight calculation or choose \'single\' or \'multi\' in case of network param update: ')
+userInput=input('chose \'default\' for orginal link weight calculation or choose \'NetworkParam\' for network parameter update: ')
 userInput=userInput.lower()
 if str(userInput)==str('default'):
-    NetworkParamUpdate(userInput,[],None,None)    
-userinput1=input('Parameter to be updated (time or capacity):')
-userinput1=userinput1.lower()
-k='multi'
-'variable k is default or single or multi|| if k is default then var2 is [], for signle eg ["water"],for multi ["water","road"]'
-'var3 can be default, time, capacity||var4 for default is None for other two type var3 is float value e.g. 0.3 for 30%'
-NetworkParamUpdate(userInput,[],userinput1,None)
+    NetworkParamUpdate(userInput,[],None,None)
+else:
+    userinput1=input('Parameter to be updated (time or capacity):')
+    userinput1=userinput1.lower()
+    layers=[['rail'],['road'],['water'],['rail','road'],['water','rail'],['water','road']]
+    if str(userinput1)==str('time'):
+        for layer in layers:
+            for decrement in np.arange(0.3,0.9,0.1):
+                NetworkParamUpdate(userInput,layer,userinput1,np.around(decrement,1))
+    elif str(userinput1)==str('capacity'):
+        decrements=[0.4,0.6,0.8,0.9]
+        for layer in layers:
+            for decrement in decrements:
+                NetworkParamUpdate(userInput,layer,userinput1,decrement)
+    else:
+        print('Not an updatable parameter')
+#k='multi'
+#'variable k is default or single or multi|| if k is default then var2 is [], for signle eg ["water"],for multi ["water","road"]'
+#'var3 can be default, time, capacity||var4 for default is None for other two type var3 is float value e.g. 0.3 for 30%'
+#NetworkParamUpdate(userInput,[],userinput1,None)
 
