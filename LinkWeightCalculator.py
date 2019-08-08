@@ -219,9 +219,12 @@ def NetworkParamUpdate(Typ,networks,incrementtype,increment):
         terminalcost=TerminalCost(Translink,alpha,BetaRDW,AvgSpeedOD,AvgSpeedRail,AvgSpeedWater)
         odcosts=ODlinkCost(AccEgrLink,alpha,BetaRDW,CapacityOD,AvgSpeedOD)
         MatrixCostOutput(watercost,roadcost,railcost,terminalcost,odcosts,increment,incrementtype,networks)
-
+userInput=input('chose \'default\' for orginal link weight calculation or choose \'single\' or \'multi\' in case of network param update')
+userInput=userInput.lower()
+userinput1=input('Parameter to be updated (time or capacity):')
+userinput1=userinput1.lower()
 k='multi'
 'variable k is default or single or multi|| if k is default then var2 is [], for signle eg ["water"],for multi ["water","road"]'
 'var3 can be default, time, capacity||var4 for default is None for other two type var3 is float value e.g. 0.3 for 30%'
-NetworkParamUpdate(k,['water','road'],'capacity',0.4)
+NetworkParamUpdate(userInput,[],userinput1,None)
 
