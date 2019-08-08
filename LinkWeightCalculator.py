@@ -239,8 +239,4 @@ else:
                 NetworkParamUpdate(userInput,layer,userinput1,decrement)
     else:
         print('Not an updatable parameter')
-#k='multi'
-#'variable k is default or single or multi|| if k is default then var2 is [], for signle eg ["water"],for multi ["water","road"]'
-#'var3 can be default, time, capacity||var4 for default is None for other two type var3 is float value e.g. 0.3 for 30%'
-#NetworkParamUpdate(userInput,[],userinput1,None)
 
