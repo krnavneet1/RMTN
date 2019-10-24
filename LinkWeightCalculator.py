@@ -233,7 +233,7 @@ else:
             for decrement in np.arange(0.3,0.9,0.1):
                 NetworkParamUpdate(userInput,layer,userinput1,np.around(decrement,1))
     elif str(userinput1)==str('capacity'):
-        decrements=[0.4,0.6,0.8,0.9]
+        decrements=[0.2,0.4,0.6,0.8,0.9]
         for layer in layers:
             for decrement in decrements:
                 NetworkParamUpdate(userInput,layer,userinput1,decrement)
