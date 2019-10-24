@@ -3,6 +3,24 @@
 Created on Wed Apr 25 11:51:30 2018
 
 @author: NaVnEeT
+
+This code will calculate and update the link weight of the synchromodal transport network (road, rail, water, terminal).
+The default value of different paramenter are taken from BasGoed model except for capacity.
+More detail about these value can be found in following two master thesis:
+    1. http://resolver.tudelft.nl/uuid:ed5af468-4555-4018-8463-43165db2775f
+    2. http://resolver.tudelft.nl/uuid:808c664b-dd20-478f-8b4a-130ea99d0a60
+
+INPUT: An excel named matrix having 4 sheets Water, Road, Rail, Terminal and OD. 
+       Each sheet has list of links with corresponding distance (in meters) 
+
+OUTPUT: A folder named as LinkList containing three sub-folders:-
+        1. Default - Caontains an excel with default link weight
+        2. Time - Contains folder for each modality and combination of modality. Each folder contains excel with updated travel time per link and updated general cost of traveling per link.
+                    The amount of decrement is added in the name of excel, for example 'MatrixCost_0.3.xlsx' represent a drement of 30%
+        3. Capacity - Contains folder for each modality and combination of modality. Each folder contains excel with updated capacity per link.
+                    The amount of decrement is added in the name of excel, for example 'MatrixCost_0.3.xlsx' represent a drement of 30%
+                    
+Note1: The decremnt percentage in link weight can be updated by changing the value in line 260 and 263
 """
 
 import pandas as pd
@@ -46,6 +64,7 @@ def AccEgrLinkCost(DistCost,TimeCost,Dist,AvgSpeed,LinkHandlingCost):
     return(AccEgrCost)
 
 def WaterCost(water,alpha,Beta,Capacity,AvgSpeedWater):
+    '''Calculate and update link weight for water network'''
     watertemp=water.copy()
     WCost=[]
     Wtime=[]
@@ -63,6 +82,7 @@ def WaterCost(water,alpha,Beta,Capacity,AvgSpeedWater):
     return(watertemp)
 
 def RoadCost(road,alpha,Beta,Capacity,AvgSpeedRoad):
+    '''Calculate and update link weight for road network'''
     roadtemp=road.copy()
     RCost=[]
     Rtime=[]
@@ -80,6 +100,7 @@ def RoadCost(road,alpha,Beta,Capacity,AvgSpeedRoad):
     return(roadtemp)
 
 def RailCost(rail,alpha,Beta,Capacity,AvgSpeedRail):
+    '''Calculate and update link weight for rail network'''
     railtemp=rail.copy()
     RaCost=[]
     Ratime=[]
@@ -97,6 +118,7 @@ def RailCost(rail,alpha,Beta,Capacity,AvgSpeedRail):
     return(railtemp)
 
 def TerminalCost(Translink,alpha,Beta,AvgSpeedOD,AvgSpeedRail,AvgSpeedWater):
+    '''Calculate and update link weight for terminals'''
     Translinktemp=Translink.copy()
     TranslinkCost=[]
     TranslinkTime=[]
@@ -120,6 +142,7 @@ def TerminalCost(Translink,alpha,Beta,AvgSpeedOD,AvgSpeedRail,AvgSpeedWater):
     return(Translinktemp)
 
 def ODlinkCost(AccEgrLink,alpha,Beta,Capacity,AvgSpeedOD):
+    '''Calculate and update link weight for OD links'''
     AccEgrLinktemp=AccEgrLink.copy()
     ODCost=[]
     ODTime=[]
@@ -137,6 +160,7 @@ def ODlinkCost(AccEgrLink,alpha,Beta,Capacity,AvgSpeedOD):
     return(AccEgrLinktemp)
 
 def MatrixCostOutput(watercost,roadcost,railcost,terminalcost,odcosts,increment,incrementtype,networks):
+    '''Create output as excel'''
     report_path='LinkList'
     if len(networks)==1:
         if not os.path.exists(os.path.join(report_path, incrementtype,networks[0])):
@@ -177,7 +201,8 @@ def MatrixCostOutput(watercost,roadcost,railcost,terminalcost,odcosts,increment,
         
         
     
-def NetworkParamUpdate(Typ,networks,incrementtype,increment):  
+def NetworkParamUpdate(Typ,networks,incrementtype,increment):
+    '''Calculate and update network link weights'''
     CapacityRD,CapacityOD,CapacityRl,CapacityWtr=[CapacityRoad,CapacityODP,CapacityRail,CapacityWater]
     if str(Typ) != str('default'):
         AvgSpeedWtr,AvgSpeedRd,AvgSpeedRl,AvgSpeedODlink=[AvgSpeedWater,AvgSpeedRoad,AvgSpeedRail,AvgSpeedOD]        
