@@ -24,10 +24,11 @@ AvgSpeedWater,AvgSpeedRoad,AvgSpeedRail,AvgSpeedOD=[15,60,90,30]
 CapacityRoad,CapacityODP,CapacityRail,CapacityWater=[4600.0,4600.0,4400.0,6000.0]
 "Default values for BPR function"
 alpha=0.15
+'''Where BetaRDW is for roadways and waterways and BetaRl is for railways'''
 BetaRDW,BetaRl=[4.0,8.0]
        
 def GeoLinkCost(DistCost,TimeCost,Dist,AvgSpeed):
-    "Calculate geographical link cost for each type of link"
+    "Calculate geographical link cost for each type of moalities"
     CostGeoLink=DistCost*Dist+TimeCost*(Dist/AvgSpeed)
     return(CostGeoLink)
     
