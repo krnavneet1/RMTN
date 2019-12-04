@@ -18,16 +18,16 @@ def ShortestPath(graph,source,destination):
 
 def RunAoN(var1,UserInput,UserInput1,InterDepPair,Demand,xls,fol,incrmnt):
     '''Reading from excel-workbook(edge-list) and creating the network'''
-    WaterWay=pd.read_excel(xls,'Water')
-    Road=pd.read_excel(xls,'Road')
-    Rail=pd.read_excel(xls,'Rail')
-    OD=pd.read_excel(xls,'OD')
-    Terminal=pd.read_excel(xls,'Terminal')
-    WaterWayUID=WaterWay.drop(['NewNode-A','NewNode-B'],axis=1)
-    RoadUID=Road.drop(['NewNode-A','NewNode-B'],axis=1)
-    RailUID=Rail.drop(['NewNode-A','NewNode-B'],axis=1)
-    ODUID=OD.drop(['NewNode-A','NewNode-B'],axis=1)
-    TerminalUID=Terminal.drop(['NewNode-A','NewNode-B'],axis=1)
+    WaterWayUID=pd.read_excel(xls,'Water')
+    RoadUID=pd.read_excel(xls,'Road')
+    RailUID=pd.read_excel(xls,'Rail')
+    ODUID=pd.read_excel(xls,'OD')
+    TerminalUID=pd.read_excel(xls,'Terminal')
+#    WaterWayUID=WaterWay.drop(['NewNode-A','NewNode-B'],axis=1)
+#    RoadUID=Road.drop(['NewNode-A','NewNode-B'],axis=1)
+#    RailUID=Rail.drop(['NewNode-A','NewNode-B'],axis=1)
+#    ODUID=OD.drop(['NewNode-A','NewNode-B'],axis=1)
+#    TerminalUID=Terminal.drop(['NewNode-A','NewNode-B'],axis=1)
     Road_ODUID=pd.concat([RoadUID,ODUID])
     
     #Creating Graph(NWK means network)
@@ -41,16 +41,15 @@ def RunAoN(var1,UserInput,UserInput1,InterDepPair,Demand,xls,fol,incrmnt):
     
     if UserInput1=='road':
         network=RoadNWK
-#        name='road'
     elif UserInput1=='rail':
         network=RailNWK
-#        name='rail'
     elif UserInput1=='water':
         network=WaterWayNWK
-#        name='water'
-    else:
+    elif UserInput1=='synchromodal':
         network=SynchoromodalNWK
-#        name='Synchoromodal'
+    else:
+        print('Wrong network name')
+
     print('Calculating...')    
           
     headers=[]
@@ -85,7 +84,7 @@ def RunAoN(var1,UserInput,UserInput1,InterDepPair,Demand,xls,fol,incrmnt):
         except nx.NetworkXNoPath:
             print("No second path between",source,"and",target,"for pairs",pairs[0],"and",pairs[1])
     #AoN=AoN.convert_objects(convert_numeric=True).fillna(0)
-    report_path = 'AoNOutput'
+    report_path = 'AoNOutput_'+UserInput1
     if var1=='default':
         if not os.path.exists(os.path.join(report_path,var1)):
             os.makedirs(os.path.join(report_path,var1))
@@ -103,7 +102,7 @@ def RunAoN(var1,UserInput,UserInput1,InterDepPair,Demand,xls,fol,incrmnt):
         
 
 cwd = os.getcwd()
-var1=input('Select "default" for running with default parameter otherwise "decerement" : ')
+var1=input('Select "default" for running with default parameter otherwise "decrement" : ')
 var1=var1.lower()
 UserInput=input('Select weight(Time, Distance or Travelcost) for links: ')
 UserInput=UserInput.title()
@@ -124,8 +123,9 @@ for index,row in Interdependent.iterrows():
     InterdepPair.append(Interdeps)
 removeduplicates = set(tuple(x) for x in InterdepPair)
 InterDepPair = [ list(x) for x in removeduplicates ] 
-xls3=pd.ExcelFile('NL_WRST_LI_demand.xlsx')
-Demand=pd.read_excel(xls3,'NL_WRST_LI_demand')
+#read demand matrix
+xls3=pd.ExcelFile('Demand.xlsx')
+Demand=pd.read_excel(xls3,'Demand')
 
 if str(var1)==str('default'):
     path=cwd+'\\LinkList\\default\\'
