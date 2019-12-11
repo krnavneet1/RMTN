@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Mar 19 20:57:14 2018
+All-or-Nothing traffic assignment for synchromodal transport network consisting 
+of three modes-Rail,water and Road. The output xlsx files has system cost when 
+interdependent pairs (Bridges, tunnels etc) are removed.
+
+Three user input is required to run this.
 
 @author: NaVnEeT
 """
@@ -23,11 +28,6 @@ def RunAoN(var1,UserInput,UserInput1,InterDepPair,Demand,xls,fol,incrmnt):
     RailUID=pd.read_excel(xls,'Rail')
     ODUID=pd.read_excel(xls,'OD')
     TerminalUID=pd.read_excel(xls,'Terminal')
-#    WaterWayUID=WaterWay.drop(['NewNode-A','NewNode-B'],axis=1)
-#    RoadUID=Road.drop(['NewNode-A','NewNode-B'],axis=1)
-#    RailUID=Rail.drop(['NewNode-A','NewNode-B'],axis=1)
-#    ODUID=OD.drop(['NewNode-A','NewNode-B'],axis=1)
-#    TerminalUID=Terminal.drop(['NewNode-A','NewNode-B'],axis=1)
     Road_ODUID=pd.concat([RoadUID,ODUID])
     
     #Creating Graph(NWK means network)
@@ -75,11 +75,11 @@ def RunAoN(var1,UserInput,UserInput1,InterDepPair,Demand,xls,fol,incrmnt):
                 if len(interdepinfra1)>0:
                     DummyGraph1.remove_nodes_from(pairs)
                     newpath,newlength=ShortestPath(DummyGraph1,source,target)
-                    AoN.loc[(AoN['source']==source) & (AoN['target']==target),pairs[0]+"-"+pairs[1]+"-path"]=newlength
+                    AoN.loc[(AoN['source']==source) & (AoN['target']==target),pairs[0]+"-"+pairs[1]+"-length"]=newlength
                     AoN.loc[(AoN['source']==source) & (AoN['target']==target),pairs[0]+"-"+pairs[1]+"-Cost"]=newlength*demand
                 else:
-                    '''If there is no interdependent infra in the path the cost is considered is zero as the infra has no effect on intial cost'''
-                    AoN.loc[(AoN['source']==source) & (AoN['target']==target),pairs[0]+"-"+pairs[1]+"-path"]=length
+                    '''If there is no interdependent infra in the path the cost no effect on cost'''
+                    AoN.loc[(AoN['source']==source) & (AoN['target']==target),pairs[0]+"-"+pairs[1]+"-length"]=length
                     AoN.loc[(AoN['source']==source) & (AoN['target']==target),pairs[0]+"-"+pairs[1]+"-Cost"]=length*demand
         except nx.NetworkXNoPath:
             print("No second path between",source,"and",target,"for pairs",pairs[0],"and",pairs[1])
@@ -95,7 +95,7 @@ def RunAoN(var1,UserInput,UserInput1,InterDepPair,Demand,xls,fol,incrmnt):
     else:
         if not os.path.exists(os.path.join(report_path,var1,fol)):
             os.makedirs(os.path.join(report_path,var1,fol))
-        outName='AllOrNothing'+'_'+UserInput+incrmnt
+        outName='AoNInterDep'+'_'+UserInput+incrmnt
         writer=pd.ExcelWriter(os.path.join(report_path,var1,fol,outName), engine='xlsxwriter')
         AoN.to_excel(writer,UserInput)
         writer.save()
