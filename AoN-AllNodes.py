@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Mar 19 20:57:14 2018
-All-or-Nothing traffic assignment for synchromodal transport network consisting 
-of three modes-Rail,water and Road. The output xlsx files has system cost when 
-interdependent pairs (Bridges, tunnels etc) are removed.
-
-Three user input is required to run this.
+Created on Mon Dec 16 06:18:29 2019
 
 @author: NaVnEeT
 """
@@ -21,7 +16,7 @@ def ShortestPath(graph,source,destination):
     PathLength=nx.dijkstra_path_length(graph,source,destination,UserInput)
     return(Path,PathLength)
 
-def RunAoN(var1,UserInput,UserInput1,InterDepPair,Demand,xls,fol,incrmnt):
+def RunAoN(var1,UserInput,UserInput1,Demand,xls,fol,incrmnt):
     '''Run All or nathing traffic assignment'''
 #Reading from excel-workbook(edge-list) and creating the network
     WaterWayUID=pd.read_excel(xls,'Water')
@@ -51,52 +46,38 @@ def RunAoN(var1,UserInput,UserInput1,InterDepPair,Demand,xls,fol,incrmnt):
     else:
         print('Wrong network name')
 
-    print('Calculating...')    
-     
-    headers=[]
-    for pair in InterDepPair:
-        path1=pair[0]+"-"+pair[1]+"-path"
-        headers.append(path1)
-        costs=pair[0]+"-"+pair[1]+"-Cost"
-        headers.append(costs)
-    orglen=['IntialPath','IntialCost']
-    headers=orglen+headers
-    header=pd.DataFrame(columns=headers)
-    header=header.fillna(0)
-    AoN=pd.concat([Demand,header],axis=1)
+    AoN=Demand.copy()
     for source,target,demand in Demand.itertuples(index=False):
         DummyGraph=network.copy()
         Path,length=ShortestPath(DummyGraph,source,target)
         AoN.loc[(AoN['source']==source) & (AoN['target']==target),'Intiallength']=length
         AoN.loc[(AoN['source']==source) & (AoN['target']==target),'IntialCost']=length*demand
         try:
-            for pairs in InterDepPair:
+            for nodes in Path[1:len(Path)-1]:
                 DummyGraph1=network.copy()
-                interdepinfra1=list(set(pairs).intersection(set(Path)))
-                if len(interdepinfra1)>0:
-                    DummyGraph1.remove_nodes_from(pairs)
-                    newpath,newlength=ShortestPath(DummyGraph1,source,target)
-                    AoN.loc[(AoN['source']==source) & (AoN['target']==target),pairs[0]+"-"+pairs[1]+"-length"]=newlength
-                    AoN.loc[(AoN['source']==source) & (AoN['target']==target),pairs[0]+"-"+pairs[1]+"-Cost"]=newlength*demand
-                else:
-                    '''If there is no interdependent infra in the path the cost no effect on cost'''
-                    AoN.loc[(AoN['source']==source) & (AoN['target']==target),pairs[0]+"-"+pairs[1]+"-length"]=length
-                    AoN.loc[(AoN['source']==source) & (AoN['target']==target),pairs[0]+"-"+pairs[1]+"-Cost"]=length*demand
+                DummyGraph1.remove_node(nodes)
+                newpath,newlength=ShortestPath(DummyGraph1,source,target)
+                AoN.loc[(AoN['source']==source) & (AoN['target']==target),nodes+"-length"]=newlength
+                AoN.loc[(AoN['source']==source) & (AoN['target']==target),nodes+"-Cost"]=newlength*demand
         except nx.NetworkXNoPath:
-            print("No second path between",source,"and",target,"for pairs",pairs[0],"and",pairs[1])
-    #AoN=AoN.convert_objects(convert_numeric=True).fillna(0)
-    report_path = 'AoNOutput_'+UserInput1
+            print("Removal of",nodes,"disconnect the",source,"and",target)
+    for header in list(AoN):
+        if str('Intial') not in str(header) and str('Cost') in str(header):
+            AoN[header]=AoN[header].fillna(AoN['IntialCost'])
+        elif str('Intial') not in str(header) and str('path') in str(header):
+            AoN[header]=AoN[header].fillna(0)
+    report_path = 'AoNAllNodeOutput_'+UserInput1
     if var1=='default':
         if not os.path.exists(os.path.join(report_path,var1)):
             os.makedirs(os.path.join(report_path,var1))
-        outName='AoNInterDep'+'_'+UserInput+'.xlsx'
+        outName='AoNAllNode'+'_'+UserInput+'.xlsx'
         writer=pd.ExcelWriter(os.path.join(report_path,var1,outName), engine='xlsxwriter')
         AoN.to_excel(writer,UserInput)
         writer.save()
     else:
         if not os.path.exists(os.path.join(report_path,var1,fol)):
             os.makedirs(os.path.join(report_path,var1,fol))
-        outName='AoNInterDep'+'_'+UserInput+incrmnt
+        outName='AoNAllNode'+'_'+UserInput+incrmnt
         writer=pd.ExcelWriter(os.path.join(report_path,var1,fol,outName), engine='xlsxwriter')
         AoN.to_excel(writer,UserInput)
         writer.save()
@@ -112,19 +93,7 @@ UserInput1=UserInput1.lower()
 
 #Make a group of interdependent nodes which are related to each other
 xls2=pd.ExcelFile('list.xlsx')
-Interdependent=pd.read_excel(xls2,'InterdependNode')
-#create pair of interdependent infrastructure (pair the nodes crossing in different modes)  
-InterdepPair=[]
-for index,row in Interdependent.iterrows():
-    Interdeps=[]
-    nam,ID=row['Interdep'].split("_")  
-    for index,row in Interdependent.iterrows():
-        nams,IDs=row['Interdep'].split("_")
-        if IDs==ID:
-            Interdeps.append(row['Interdep'])
-    InterdepPair.append(Interdeps)
-removeduplicates = set(tuple(x) for x in InterdepPair)
-InterDepPair = [ list(x) for x in removeduplicates ] 
+
 #read demand matrix
 xls3=pd.ExcelFile('Demand.xlsx')
 Demand=pd.read_excel(xls3,'Demand')
@@ -132,7 +101,7 @@ Demand=pd.read_excel(xls3,'Demand')
 if str(var1)==str('default'):
     path=cwd+'\\LinkList\\default\\'
     xls=pd.ExcelFile(path+'MatrixCost_default.xlsx')
-    RunAoN(var1,UserInput,UserInput1,InterDepPair,Demand,xls,None,None)
+    RunAoN(var1,UserInput,UserInput1,Demand,xls,None,None)
 else:
     path=cwd+'\\LinkList\\time\\'
     folders=os.listdir(path)
@@ -142,5 +111,5 @@ else:
         for xl in xlses:
             xls=pd.ExcelFile(xlpath+'\\'+xl)
             incrmnt=re.split('_',xl)
-            RunAoN(var1,UserInput,UserInput1,InterDepPair,Demand,xls,f,incrmnt[1])
+            RunAoN(var1,UserInput,UserInput1,Demand,xls,f,incrmnt[1])
 
