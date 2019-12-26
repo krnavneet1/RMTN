@@ -12,9 +12,15 @@ import os
 import re
 import logging as lg
 
-#Reading from excel-workbook and generating edege-list with distance as weight
-def RunMS2P(var1,UserInput,UserInput1,InterDepPair,Demand,xls,fol,incrmnt,Beta):
 
+def ShortestPath(graph,source,destination):
+    '''Generate shortest path node list and length for a given source and destination'''
+    Path=nx.dijkstra_path(graph,source,destination,UserInput)
+    PathLength=nx.dijkstra_path_length(graph,source,destination,UserInput)
+    return(Path,PathLength)
+
+def RunMS2P(var1,UserInput,UserInput1,InterDepPair,Demand,xls,fol,incrmnt,Beta):
+    '''Run model split traffic assignment analysis for interdependent pair removal'''
     WaterWay=pd.read_excel(xls,'Water')
     Road=pd.read_excel(xls,'Road')
     Rail=pd.read_excel(xls,'Rail')
@@ -40,14 +46,7 @@ def RunMS2P(var1,UserInput,UserInput1,InterDepPair,Demand,xls,fol,incrmnt,Beta):
     else:
         network=SynchoromodalNWK
     print('Calculating...')    
-    
-  
-    def ShortestPath(graph,source,destination):
-        '''Generate shortest path node list and length for a given source and destination'''
-        Path=nx.dijkstra_path(graph,source,destination,UserInput)
-        PathLength=nx.dijkstra_path_length(graph,source,destination,UserInput)
-        return(Path,PathLength)
-    
+        
     headers=[]
     for pair in InterDepPair:
         path1=pair[0]+"-"+pair[1]+"-path1length"
@@ -145,18 +144,18 @@ def RunMS2P(var1,UserInput,UserInput1,InterDepPair,Demand,xls,fol,incrmnt,Beta):
         except nx.NetworkXNoPath:
             lg.info("No second path between %s and %s,runType-%s:%s:%s:%s",source,target,var1,UserInput,incrmnt,fol)
     modesplit=modesplit.fillna(0)
-    report_path = 'MS2POutput_'+UserInput1+str(beta)
+    report_path = 'MS2POutput-InterDep_'+UserInput1+str(beta)
     if var1=='default':
         if not os.path.exists(os.path.join(report_path,var1)):
             os.makedirs(os.path.join(report_path,var1))
-        outName='MS2P'+'_'+UserInput+'.xlsx'
+        outName='MS2PInterDep'+'_'+UserInput+'.xlsx'
         writer=pd.ExcelWriter(os.path.join(report_path,var1,outName), engine='xlsxwriter')
         modesplit.to_excel(writer,UserInput)
         writer.save()
     else:
         if not os.path.exists(os.path.join(report_path,var1,fol)):
             os.makedirs(os.path.join(report_path,var1,fol))
-        outName='MS2P'+'_'+UserInput+incrmnt
+        outName='MS2PInterDep'+'_'+UserInput+incrmnt
         writer=pd.ExcelWriter(os.path.join(report_path,var1,fol,outName), engine='xlsxwriter')
         modesplit.to_excel(writer,UserInput)
         writer.save()       
