@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Dec 25 14:12:54 2019
+Mode split with AoN traffic assignment for synchromodal transport network consisting 
+of three modes-Rail,water and Road. The output xlsx files has system cost when 
+a node is removed.
 
+Four user input is required to run this.
 @author: NaVnEeT
 """
 

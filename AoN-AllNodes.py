@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Dec 16 06:18:29 2019
+All-or-Nothing traffic assignment for synchromodal transport network consisting 
+of three modes-Rail,water and Road. The output xlsx files has system cost when 
+a node is removed.
 
+Three user input is required to run this.
 @author: NaVnEeT
 """
 
